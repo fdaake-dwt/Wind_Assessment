@@ -1,3 +1,6 @@
 streamlit
 openai
 pandas
+gsheetsdb
+gspread
+oauth2client
