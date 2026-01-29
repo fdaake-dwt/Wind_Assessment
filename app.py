@@ -78,3 +78,32 @@ if submitted and name:
         
         df = pd.DataFrame(gesamtergebnis)
         st.table(df)
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+
+# --- SPEICHERN IN GOOGLE SHEETS ---
+# Wir holen die Credentials aus den Secrets
+scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+creds_dict = st.secrets["service_account"] # Das muss genau so in Secrets heißen
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+client_gs = gspread.authorize(creds)
+
+# Tabelle öffnen
+sheet_name = "Wind_Ergebnisse" # MUSS EXAKT WIE DEINE DATEI HEISSEN
+try:
+    sheet = client_gs.open(sheet_name).sheet1
+    
+    # Wir fügen für jede Frage eine Zeile hinzu
+    for ergebnis in gesamtergebnis:
+        row = [
+            name, 
+            ergebnis['Frage'], 
+            ergebnis['Punkte'], 
+            ergebnis['Feedback']
+        ]
+        sheet.append_row(row)
+        
+    st.success("✅ Ergebnisse wurden erfolgreich in der Datenbank gespeichert!")
+    
+except Exception as e:
+    st.error(f"Fehler beim Speichern: {e}")
